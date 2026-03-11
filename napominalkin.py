@@ -61,6 +61,9 @@ def add_element(message):
 
 def process_user_input(message, element):
     chat_id = str(message.chat.id)
+    if chat_id not in user_data:
+        user_data[chat_id] = {}
+        save_tasks_file()
     date_time = message.text.strip()
     try:
         parsed_time = datetime.strptime(date_time, "%d.%m.%Y %H:%M")
@@ -97,6 +100,9 @@ def process_user_input(message, element):
 @bot.message_handler(commands=["list"])
 def give_list(message):
     chat_id = str(message.chat.id)
+    if chat_id not in user_data:
+        user_data[chat_id] = {}
+        save_tasks_file()
     if len(user_data[chat_id]) == 0:
         bot.send_message(message.chat.id, "Похоже твой список пуст.")
     else:
@@ -116,7 +122,7 @@ def help(message):
                                       "После отправки события напиши дату и время, когда тебе надо про него напомнить, в формате\n"
                                       "'день.месяц.год часы:минуты'\n"
                                       "Например: '25.01.2026 09:24'\n\n"
-                                      "Что бы вывести список твоих задач, напиши /give\n\n"
+                                      "Что бы вывести список твоих задач, напиши /list\n\n"
                                       "Если хочешь удалить из списка задачу, введи /delete 'номер задачи,\n"
                                       "как в списке задач (посмотреть можно в /list)'\n"
                                       "Например:  '/delete 2'")
@@ -125,6 +131,9 @@ def help(message):
 @bot.message_handler(commands=["delete"])
 def delete(message):
     chat_id = str(message.chat.id)
+    if chat_id not in user_data:
+        user_data[chat_id] = {}
+        save_tasks_file()
     deleted_element = ""
     date = ""
     try:
@@ -164,16 +173,16 @@ def time_check():
     while True:
         now_time = datetime.now(ZoneInfo("Europe/Moscow")).strftime("%d.%m.%Y %H:%M")
         if now_time in time_data:
-            index = 0
-            for i in time_data[now_time]:
-                task = user_data[str(i)][now_time]
-                bot.send_message(i, f"Напоминаю про событие: '{task[0]}'.")
-                del time_data[now_time[index]]
+            while len(time_data[now_time]) > 0:
+                ind = time_data[now_time].pop(0)
                 save_time_file()
-                del user_data[str(i)][now_time]
+                task = user_data[str(ind)][now_time]
+                bot.send_message(str(ind), f"Напоминаю про событие: '{task[0]}'.")
+                del user_data[str(ind)][now_time]
                 save_tasks_file()
-                index += 1
-        time.sleep(30)
+            del time_data[now_time]
+            save_time_file()
+        time.sleep(5)
 
 
 timer_thread = threading.Thread(target=time_check)

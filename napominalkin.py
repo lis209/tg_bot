@@ -164,13 +164,15 @@ def time_check():
     while True:
         now_time = datetime.now(ZoneInfo("Europe/Moscow")).strftime("%d.%m.%Y %H:%M")
         if now_time in time_data:
+            index = 0
             for i in time_data[now_time]:
                 task = user_data[str(i)][now_time]
                 bot.send_message(i, f"Напоминаю про событие: '{task[0]}'.")
-                del time_data[now_time]
+                del time_data[now_time[index]]
                 save_time_file()
                 del user_data[str(i)][now_time]
                 save_tasks_file()
+                index += 1
         time.sleep(30)
 
 

@@ -5,6 +5,9 @@ import telebot
 import time
 from datetime import datetime
 from zoneinfo import ZoneInfo
+from dotenv import load_dotenv
+
+load_dotenv()
 
 token = os.environ.get("TOKEN")
 
